@@ -50,4 +50,6 @@
   normal magenta ." `6 - Compile a literal pointer" cr
   normal cr
 ;
-: cf clear help repeat key check again ;
+: colors clear help repeat key check again ;
+' colors is boot
+colors
