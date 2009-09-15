@@ -3,6 +3,10 @@
 ( License: ISC                                              )
 ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
 
+( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
+( Define words to display colors. This is from the Retro    )
+( library: contrib/terminal-colors.retro                    )
+( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
 {{
   : ESC$ ( $- ) 27 emit type ;
 ---reveal---
@@ -17,23 +21,33 @@
   : normal s" [0m" ESC$ ;      : bold s" [1m" ESC$ ;
 }}
 
-{{
-  : b bye ;
----reveal---
-  : bye normal b ;
-}}
-: Fx
-  dup 49 =if drop red create ['] .word last @ d->class ! ] ;then
-  dup 50 =if drop green 32 accept tib find 0 !if dup d->xt @ swap d->class @ with-class then ;then
-  dup 51 =if drop blue 32 accept tib isNumber 0; drop tib >number .data ;then
-  dup 52 =if drop magenta create ;then
+
+( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
+( Remap 'bye' to reset the colors before exiting.           )
+( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
+' bye : bye normal [ compile ] ;
+
+
+( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
+( Handle the actions associated with each color             )
+( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
+: doColor
+  dup 49 =if drop normal red     create ;then
+  dup 50 =if drop normal green   32 accept tib find 0 !if d->xt @ execute then ;then
+  dup 51 =if drop bold   green   32 accept tib find 0 !if d->xt @ compile then ;then
+  dup 52 =if drop normal blue    32 accept tib isNumber? 0; drop tib >number .data ;then
+  dup 53 =if drop bold   blue    32 accept tib isNumber? 0; drop tib >number literal, ;then
+  dup 54 =if drop normal magenta 32 accept tib find 0 !if d->xt @ .data then ;then
   drop
 ;
-: check dup 96 =if drop key Fx ;then normal bold emit ;
+: check dup 96 =if drop key doColor ;then normal black emit ;
 : help
-  red     ." `1 - Create a named entry" cr
-  green   ." `2 - Execute a word" cr
-  blue    ." `3 - Execute a number" cr
-  magenta ." `4 - Create a data structure" cr cr
+  normal red     ." `1 - Create a name" cr
+  normal green   ." `2 - Execute a word" cr
+  bold   green   ." `3 - Compile a word" cr
+  normal blue    ." `4 - Execute a number" cr
+  bold   blue    ." `5 - Compile a number" cr
+  normal magenta ." `6 - Compile a literal pointer" cr
+  normal cr
 ;
-: cf clear help bold repeat key check again ;
+: cf clear help repeat key check again ;
