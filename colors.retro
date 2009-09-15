@@ -42,6 +42,8 @@
 ;
 : check dup 96 =if drop key doColor ;then normal black emit ;
 : help
+  bold   red     ." color" green ." Retro" cr
+  bold   black   ." -------------------------------" cr 
   normal red     ." `1 - Create a name" cr
   normal green   ." `2 - Execute a word" cr
   bold   green   ." `3 - Compile a word" cr
