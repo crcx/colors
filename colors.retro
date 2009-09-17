@@ -40,48 +40,54 @@
   bold   black   ." `6 - Start/stop compiler" cr cr
 ;
 
-( This is a dummy class for comments )
-: .nope ( a- ) drop ;
 
 ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
-( Each color maps to an action or class                     )
+( colorRetro main code                                      )
 ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
-variable current
-: bold? compiler @ if bold ;then normal ;
-: colorize
-  dup 49 =if bold? red create green ['] .word current ! ;then
-  dup 50 =if bold? green ['] .word current ! ;then
-  dup 51 =if bold? blue  ['] .data current ! ;then
-  dup 52 =if bold? magenta ['] .macro current ! ;then
-  dup 53 =if bold? black ['] .nope current ! ;then
-  dup 54 =if compiler @ not compiler ! ;then
-  drop
-;
+{{
+  ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
+  ( This is a dummy class for comments                        )
+  ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
+  : .nope ( a- ) drop ;
 
-( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
-( Custom key remapper to trap the color prefix codes        )
-( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
-: check dup 96 =if drop key colorize key ;then ;
-' check is (remap-keys)
+  ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
+  ( Each color maps to an action or class                     )
+  ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
+  variable current
+  : bold? compiler @ if bold ;then normal ;
+  : colorize
+    dup 49 =if bold? red create green ['] .word current ! ;then
+    dup 50 =if bold? green   ['] .word  current ! ;then
+    dup 51 =if bold? blue    ['] .data  current ! ;then
+    dup 52 =if bold? magenta ['] .macro current ! ;then
+    dup 53 =if bold? black   ['] .nope  current ! ;then
+    dup 54 =if compiler @ not compiler ! ;then
+    drop
+  ;
 
+  ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
+  ( Catch color sequences and call the color handler word     )
+  ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
+  : check dup 96 =if drop key colorize key ;then ;
+  ' check is (remap-keys)
 
-( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
-( A Forth Interpreter                                       )
-( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
-variable flag
-: word?
-  tib find 0 !if d->xt @ current @ with-class flag off ;then drop ;
-: error?
-  flag @ 0; current @ ['] nope !if ." Word not found!" cr then ;
-: number?
-  tib isNumber? 0; drop flag off tib >number .data ;
-: interpret
-  repeat flag on 32 accept word? number? error? again ;
-
+  ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
+  ( The colorRetro listener                                   )
+  ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
+  variable flag
+  : word?
+    tib find 0 !if d->xt @ current @ with-class flag off ;then drop ;
+  : error?
+    flag @ 0; current @ ['] nope !if ." Word not found!" cr then ;
+  : number?
+    tib isNumber? 0; drop flag off tib >number .data ;
+  : interpret
+    repeat flag on 32 accept word? number? error? again ;
+---reveal---
+  : colors clear help ['] .word current ! normal green interpret ;
+}}
 
 ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
 ( Start colorRetro                                          )
 ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
-: colors clear help ['] .word current ! normal green interpret ;
-' colors is boot
 colors
