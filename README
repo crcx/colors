@@ -16,7 +16,7 @@ To facilitiate study of this, I now present colorRetro.
 
 This is a color based interpreter for Retro. It layers directly
 over Retro, so with some care, you should be able to make use
-of all aspects of the Retro language.
+of almost all aspects of the Retro language.
 
 Each item being entered needs to have a color (action) defined.
 This is done by using a two character prefix sequence. This
@@ -24,19 +24,24 @@ sequence is started by a backtick and is followed by a color
 identifier (a number).
 
 
- Sequence   Color         Action
- -----------------------------------------------
- `1         red           Create a name
- `2         green         Execute a word
- `3         dark green    Compile a word
- `4         blue          Push number to stack
- `5         dark blue     Compile a number
- `6         magenta       Push pointer to stack
- `7         dark magenta  Compile pointer
- -----------------------------------------------
+ Sequence   Color/Attrib   Action
+ ----------------------------------------------------
+ `1         red            Create a name
+                           Next word will be green.
+ `2         green          Execute or Compile words
+ `3         blue           Push or Compile pointers
+ `4         magenta        Execute a word immediately
+ `5         black          Comments
+ `6         bold           Start/stop compiler
+ ----------------------------------------------------
 
-If you enter something with no sequence prefix, it will be
-shown in black and treated as a comment.
+So, to define a word:
+
+`1name `6code numbers, etc `4; `6
+
+Or, a variable:
+
+`1name value ,
 
 ---------------------------------------------------------------
 
