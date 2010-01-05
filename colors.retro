@@ -56,19 +56,19 @@
   variable current
   : bold? compiler @ if bold ;then normal ;
   : colorize
-    dup 49 =if bold? red create green ['] .word current ! ;then
-    dup 50 =if bold? green   ['] .word  current ! ;then
-    dup 51 =if bold? blue    ['] .data  current ! ;then
-    dup 52 =if bold? magenta ['] .macro current ! ;then
-    dup 53 =if bold? black   ['] .nope  current ! ;then
-    dup 54 =if compiler @ not compiler ! ;then
+    dup char: 1 =if bold? red create green ['] .word current ! ;then
+    dup char: 2 =if bold? green   ['] .word  current ! ;then
+    dup char: 3 =if bold? blue    ['] .data  current ! ;then
+    dup char: 4 =if bold? magenta ['] .macro current ! ;then
+    dup char: 5 =if bold? black   ['] .nope  current ! ;then
+    dup char: 6 =if compiler @ not compiler ! ;then
     drop
   ;
 
   ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
   ( Catch color sequences and call the color handler word     )
   ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
-  : check dup 96 =if drop key colorize key ;then ;
+  : check dup char: ` =if drop key colorize key ;then ;
   ' check is (remap-keys)
 
   ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
