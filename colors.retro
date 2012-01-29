@@ -1,44 +1,27 @@
 ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
-( Copyright [c] 2009, Charles Childers                      )
+( Copyright [c] 2009, 2012,  Charles Childers               )
 ( License: ISC                                              )
 ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
 
-
-( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
-( Define words to display colors. This is from the Retro    )
-( library: contrib/terminal-colors.retro                    )
-( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
-{{
-  : ESC$ ( $- ) 27 emit type ;
----reveal---
-  : black    s" [30m" ESC$ ;   : onBlack    s" [40m" ESC$ ;
-  : red      s" [31m" ESC$ ;   : onRed      s" [41m" ESC$ ;
-  : green    s" [32m" ESC$ ;   : onGreen    s" [42m" ESC$ ;
-  : yellow   s" [33m" ESC$ ;   : onYellow   s" [43m" ESC$ ;
-  : blue     s" [34m" ESC$ ;   : onBlue     s" [44m" ESC$ ;
-  : magenta  s" [35m" ESC$ ;   : onMagenta  s" [45m" ESC$ ;
-  : cyan     s" [36m" ESC$ ;   : onCyan     s" [46m" ESC$ ;
-  : white    s" [37m" ESC$ ;   : onWhite    s" [47m" ESC$ ;
-  : normal s" [0m" ESC$ ;      : bold s" [1m" ESC$ ;
-}}
+needs console'
+with console'
 
 ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
 ( Remap 'bye' to reset the colors before exiting.           )
 ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
-' bye : bye normal [ compile ] ;
+[ normal default: bye ] is bye
 
 
 ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
 ( Handle the actions associated with each color             )
 ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
 : help
-  normal red     ." `1 - Create a name" cr
-  normal green   ." `2 - Execute or compile a word" cr
-  normal blue    ." `3 - Push or compile a pointer" cr
-  normal magenta ." `4 - Execute a word immediately" cr
-  normal black   ." `5 - Comments" cr
-  bold   black   ." `6 - Start/stop compiler" cr cr
-;
+  normal red     "`1 - Create a name\n" puts
+  normal green   "`2 - Execute or compile a word\n" puts
+  normal blue    "`3 - Push or compile a pointer\n" puts
+  normal magenta "`4 - Execute a word immediately\n" puts
+  normal black   "`5 - Comments\n" puts
+  bold   black   "`6 - Start/stop compiler\n\n" puts ;
 
 
 ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
@@ -54,40 +37,42 @@
   ( Each color maps to an action or class                     )
   ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
   variable current
-  : bold? compiler @ if bold ;then normal ;
+  : bold? @compiler [ bold ] [ normal ] if ;
   : colorize
-    dup char: 1 =if bold? red create green ['] .word current ! ;then
-    dup char: 2 =if bold? green   ['] .word  current ! ;then
-    dup char: 3 =if bold? blue    ['] .data  current ! ;then
-    dup char: 4 =if bold? magenta ['] .macro current ! ;then
-    dup char: 5 =if bold? black   ['] .nope  current ! ;then
-    dup char: 6 =if compiler @ not compiler ! ;then
-    drop
-  ;
+    [ '1 = ] [ bold? red      create green &.word !current ] whend
+    [ '2 = ] [ bold? green    &.word  !current ] whend
+    [ '3 = ] [ bold? blue     &.data  !current ] whend
+    [ '4 = ] [ bold? magenta  &.macro !current ] whend
+    [ '5 = ] [ bold? black    &.nope  !current ] whend
+    [ '6 = ] [ @compiler not !compiler ] whend
+    drop ;
 
   ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
   ( Catch color sequences and call the color handler word     )
   ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
-  : check dup char: ` =if drop key colorize key ;then ;
-  ' check is (remap-keys)
+  : check dup '` = [ drop getc colorize getc ] ifTrue ;
+  &check is remapKeys
 
   ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
   ( The colorRetro listener                                   )
   ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
   variable flag
   : word?
-    tib find 0 !if d->xt @ current @ with-class flag off ;then drop ;
+    tib find [ @d->xt @current withClass flag off ] [ drop ] if ;
   : error?
-    flag @ 0; current @ ['] nope !if ." Word not found!" cr then ;
+    @flag 0; @current &.nope <> [ "Word not found!\n" puts ] ifTrue ;
   : number?
-    tib isNumber? 0; drop flag off tib >number .data ;
+    tib isNumber? 0; drop flag off tib toNumber .data ;
   : interpret
     repeat flag on 32 accept word? number? error? again ;
 ---reveal---
-  : colors clear help ['] .word current ! normal green interpret ;
+  : colors clear help &.word !current normal green interpret ;
 }}
+
+without
 
 ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
 ( Start colorRetro                                          )
 ( ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ )
 colors
+
